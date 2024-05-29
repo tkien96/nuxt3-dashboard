@@ -1,0 +1,125 @@
+//  Run: npx prisma migrate dev --name init
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ESex {
+  MALE
+  FEMALE
+  ANOTHER
+}
+
+enum EStatus {
+  ACTIVE
+  NONACTIVE
+  DELETED
+}
+
+enum EClassification {
+  SYSTEM
+  ADMINISTRATOR
+  MEMBERSHIP
+  VISITOR
+}
+
+model users {
+  id                                Int                        @id @default(autoincrement())
+  name                              String                     @db.VarChar(255)
+  phone                             String                     @unique @db.VarChar(20)
+  email                             String                     @unique @db.VarChar(100)
+  password                          String                     @db.VarChar(100)
+  address                           String?                    @db.VarChar(255)
+  birthdate                         DateTime?                  @db.Date
+  sex                               ESex                       @default(ANOTHER)
+  status                            EStatus                    @default(ACTIVE)
+  classification                    EClassification            @default(VISITOR)
+  avatar                            String?
+  created_at                        DateTime                   @default(now())
+  update_at                         DateTime?                  @updatedAt
+  // Relations
+  menus_created                     menus[]                    @relation("menus_created_by")
+  menus_updated                     menus[]                    @relation("menus_updated_by")
+  functions_created                 functions[]                @relation("functions_created_by")
+  functions_updated                 functions[]                @relation("functions_updated_by")
+  groups_created                    groups[]                   @relation("groups_created_by")
+  groups_updated                    groups[]                   @relation("groups_updated_by")
+  rrelation_group_functions_created relation_group_functions[] @relation("rrelation_group_functions_created")
+  rrelation_group_functions_updated relation_group_functions[] @relation("rrelation_group_functions_updated")
+}
+
+model menus {
+  id           Int         @id @default(autoincrement())
+  parent       String
+  name         String      @db.VarChar(255)
+  to           String      @db.VarChar(255)
+  icon         String      @db.VarChar(50)
+  exact        Boolean?    @default(false)
+  tooltip      String?     @db.VarChar(255)
+  shortcuts    String?     @db.VarChar(100)
+  status       EStatus     @default(ACTIVE)
+  created_at   DateTime    @default(now())
+  created_by   Int
+  updated_at   DateTime?   @updatedAt
+  updated_by   Int?
+  // Relations to users
+  createdUsers users?      @relation("menus_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers users?      @relation("menus_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Relations to functions
+  functions    functions[] @relation("functions_menu_id")
+}
+
+model functions {
+  id              Int                        @id @default(autoincrement())
+  key             String                     @unique @db.VarChar(100)
+  menu_id         Int
+  status          EStatus                    @default(ACTIVE)
+  created_at      DateTime                   @default(now())
+  created_by      Int
+  updated_at      DateTime?                  @updatedAt
+  updated_by      Int?
+  // Relations to users
+  createdUsers    users?                     @relation("functions_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers    users?                     @relation("functions_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Relations to menus
+  functionsMenuID menus?                     @relation("functions_menu_id", fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Relations to relation_group_functions
+  function_id     relation_group_functions[] @relation("functionID")
+}
+
+model groups {
+  id           Int                        @id @default(autoincrement())
+  name         String
+  status       EStatus                    @default(ACTIVE)
+  created_at   DateTime                   @default(now())
+  created_by   Int
+  updated_at   DateTime?                  @updatedAt
+  updated_by   Int?
+  // Relations to users
+  createdUsers users?                     @relation("groups_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers users?                     @relation("groups_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Relations
+  group_id     relation_group_functions[] @relation("relation_group_functions_group_id")
+}
+
+model relation_group_functions {
+  id           Int        @id @default(autoincrement())
+  name         String
+  group_id     Int
+  function_id  Int
+  status       EStatus    @default(ACTIVE)
+  reated_at    DateTime   @default(now())
+  created_by   Int
+  updated_at   DateTime?  @updatedAt
+  updated_by   Int?
+  // Relations
+  createdUsers users?     @relation("rrelation_group_functions_created", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers users?     @relation("rrelation_group_functions_updated", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  groupID      groups?    @relation("relation_group_functions_group_id", fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  functionID   functions? @relation("functionID", fields: [function_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
