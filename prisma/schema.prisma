@@ -29,36 +29,40 @@ enum EClassification {
 }
 
 model users {
-  id                                Int                        @id @default(autoincrement())
-  name                              String                     @db.VarChar(255)
-  phone                             String                     @unique @db.VarChar(20)
-  email                             String                     @unique @db.VarChar(100)
-  password                          String                     @db.VarChar(100)
-  address                           String?                    @db.VarChar(255)
-  birthdate                         DateTime?                  @db.Date
-  sex                               ESex                       @default(ANOTHER)
-  status                            EStatus                    @default(ACTIVE)
-  classification                    EClassification            @default(VISITOR)
-  avatar                            String?
-  created_at                        DateTime                   @default(now())
-  update_at                         DateTime?                  @updatedAt
+  id                               Int                        @id @default(autoincrement())
+  name                             String                     @db.VarChar(255)
+  phone                            String                     @unique @db.VarChar(20)
+  email                            String                     @unique @db.VarChar(100)
+  password                         String                     @db.VarChar(100)
+  address                          String?                    @db.VarChar(255)
+  birthdate                        DateTime?                  @db.Date
+  sex                              ESex                       @default(ANOTHER)
+  status                           EStatus                    @default(ACTIVE)
+  classification                   EClassification            @default(VISITOR)
+  avatar                           String?
+  created_at                       DateTime                   @default(now())
+  update_at                        DateTime?                  @updatedAt
   // Relations
-  menus_created                     menus[]                    @relation("menus_created_by")
-  menus_updated                     menus[]                    @relation("menus_updated_by")
-  functions_created                 functions[]                @relation("functions_created_by")
-  functions_updated                 functions[]                @relation("functions_updated_by")
-  groups_created                    groups[]                   @relation("groups_created_by")
-  groups_updated                    groups[]                   @relation("groups_updated_by")
-  rrelation_group_functions_created relation_group_functions[] @relation("rrelation_group_functions_created")
-  rrelation_group_functions_updated relation_group_functions[] @relation("rrelation_group_functions_updated")
+  menus_created                    menus[]                    @relation("menus_created_by")
+  menus_updated                    menus[]                    @relation("menus_updated_by")
+  functions_created                functions[]                @relation("functions_created_by")
+  functions_updated                functions[]                @relation("functions_updated_by")
+  groups_created                   groups[]                   @relation("groups_created_by")
+  groups_updated                   groups[]                   @relation("groups_updated_by")
+  relation_group_functions_created relation_group_functions[] @relation("relation_group_functions_created")
+  relation_group_functions_updated relation_group_functions[] @relation("relation_group_functions_updated")
+  options_created                  options[]                  @relation("options_created_by")
+  options_updated                  options[]                  @relation("options_updated_by")
+  option_details_created           option_details[]           @relation("option_details_created_by")
+  option_details_updated           option_details[]           @relation("option_details_updated_by")
 }
 
 model menus {
   id           Int         @id @default(autoincrement())
-  parent       String
+  parent       Int?
   name         String      @db.VarChar(255)
   to           String      @db.VarChar(255)
-  icon         String      @db.VarChar(50)
+  icon         String?     @db.VarChar(100)
   exact        Boolean?    @default(false)
   tooltip      String?     @db.VarChar(255)
   shortcuts    String?     @db.VarChar(100)
@@ -72,6 +76,40 @@ model menus {
   updatedUsers users?      @relation("menus_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   // Relations to functions
   functions    functions[] @relation("functions_menu_id")
+}
+
+model options {
+  id           Int       @id @default(autoincrement())
+  name         String
+  color        String
+  status       EStatus   @default(ACTIVE)
+  created_at   DateTime  @default(now())
+  created_by   Int
+  updated_at   DateTime? @updatedAt
+  updated_by   Int?
+  // Relations to users
+  createdUsers users?    @relation("options_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers users?    @relation("options_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  option_details_parent option_details[] @relation("option_details_parent")
+}
+
+model option_details {
+  id     Int     @id @default(autoincrement())
+  parent Int     @unique
+  name   String
+  icon   String
+  color  String
+  status EStatus @default(ACTIVE)
+
+  created_at          DateTime  @default(now())
+  created_by          Int
+  updated_at          DateTime? @updatedAt
+  updated_by          Int?
+  // Relations to users
+  createdUsers        users?    @relation("option_details_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers        users?    @relation("option_details_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  optionDetailsParent options?  @relation("option_details_parent", fields: [parent], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model functions {
@@ -118,8 +156,8 @@ model relation_group_functions {
   updated_at   DateTime?  @updatedAt
   updated_by   Int?
   // Relations
-  createdUsers users?     @relation("rrelation_group_functions_created", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updatedUsers users?     @relation("rrelation_group_functions_updated", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdUsers users?     @relation("relation_group_functions_created", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedUsers users?     @relation("relation_group_functions_updated", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   groupID      groups?    @relation("relation_group_functions_group_id", fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   functionID   functions? @relation("functionID", fields: [function_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

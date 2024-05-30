@@ -1,4 +1,3 @@
-import { da } from "date-fns/locale";
 import { db } from ".";
 
 export const get_user = async (id: Number) => {

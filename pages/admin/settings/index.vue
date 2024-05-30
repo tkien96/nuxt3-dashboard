@@ -1,98 +1,234 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'admin', })
-import type { FormError, FormSubmitEvent } from '#ui/types'
-const fileRef = ref<HTMLInputElement>()
-const isDeleteAccountModalOpen = ref(false)
-const state = reactive({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
-  avatar: '',
-  bio: '',
-  password_current: '',
-  password_new: ''
-})
-const toast = useToast()
-function validate(state: any): FormError[] {
-  const errors = []
-  if (!state.name) errors.push({ path: 'name', message: 'Please enter your name.' })
-  if (!state.email) errors.push({ path: 'email', message: 'Please enter your email.' })
-  if ((state.password_current && !state.password_new) || (!state.password_current && state.password_new)) errors.push({ path: 'password', message: 'Please enter a valid password.' })
-  return errors
-}
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
-  if (!input.files?.length) {
-    return
-  }
-  state.avatar = URL.createObjectURL(input.files[0])
-}
-function onFileClick() {
-  fileRef.value?.click()
-}
-async function onSubmit(event: FormSubmitEvent<any>) {
-  console.log(event.data)
-  toast.add({ title: 'Profile updated', icon: 'i-heroicons-check-circle' })
-}
+	definePageMeta({ layout: 'admin', })
+	import type { FormError, FormSubmitEvent } from "#ui/types";
+	const fileRef = ref<HTMLInputElement>();
+	const state = reactive({
+		name: "Example Company",
+		email: "example@gmail.com",
+		phone: "0909xxxxxx",
+		address: "Ho Chi Minh City",
+		favicon: "",
+		title: "",
+		keyword: "",
+		description: "",
+		password_current: "",
+		password_new: "",
+		daily_email: true,
+		desktop: true,
+	});
+	const toast = useToast();
+	function validate(state: any): FormError[] {
+		const errors = [];
+		if (!state.name)
+			errors.push({ path: "name", message: "Please enter your name." });
+		if (!state.email)
+			errors.push({ path: "email", message: "Please enter your email." });
+		if (!state.phone)
+			errors.push({ path: "phone", message: "Please enter your phone." });
+		return errors;
+	}
+	function onFileChange(e: Event) {
+		const input = e.target as HTMLInputElement;
+		if (!input.files?.length) {
+			return;
+		}
+		state.favicon = URL.createObjectURL(input.files[0]);
+	}
+	function onFileClick() {
+		fileRef.value?.click();
+	}
+	async function onSubmit(event: FormSubmitEvent<any>) {
+		console.log(event.data);
+		toast.add({
+			title: "Profile updated",
+			icon: "i-heroicons-check-circle",
+		});
+	}
+	async function onChange() {
+		// Do something with data
+		console.log(state);
+	}
 </script>
 <template>
-  <UiDashboardPanelContent class="pb-24">
-    <UiDashboardSection title="Theme" description="Customize the look and feel of your dashboard.">
-      <template #links>
-        <UColorModeSelect color="gray" />
-      </template>
-    </UiDashboardSection>
-    <UDivider class="mb-4" />
-    <UForm :state="state" :validate="validate" :validate-on="['submit']" @submit="onSubmit">
-      <UiDashboardSection title="Profile"
-        description="This information will be displayed publicly so be careful what you share.">
-        <template #links>
-          <UButton type="submit" label="Save changes" color="black" />
-        </template>
-        <UFormGroup name="name" label="Name" description="Will appear on receipts, invoices, and other communication."
-          required class="grid grid-cols-2 gap-2 items-center" :ui="{ container: '' }">
-          <UInput v-model="state.name" autocomplete="off" icon="i-heroicons-user" size="md" />
-        </UFormGroup>
-        <UFormGroup name="email" label="Email" description="Used to sign in, for email receipts and product updates."
-          required class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
-          <UInput v-model="state.email" type="email" autocomplete="off" icon="i-heroicons-envelope" size="md" />
-        </UFormGroup>
-        <UFormGroup name="username" label="Username"
-          description="Your unique username for logging in and your profile URL." required
-          class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
-          <UInput v-model="state.username" type="username" autocomplete="off" size="md" input-class="ps-[77px]">
-            <template #leading>
-              <span class="text-gray-500 dark:text-gray-400 text-sm">nuxt.com/</span>
-            </template>
-          </UInput>
-        </UFormGroup>
-        <UFormGroup name="avatar" label="Avatar" class="grid grid-cols-2 gap-2" help="JPG, GIF or PNG. 1MB Max."
-          :ui="{ container: 'flex flex-wrap items-center gap-3', help: 'mt-0' }">
-          <UAvatar :src="state.avatar" :alt="state.name" size="lg" />
-          <UButton label="Choose" color="white" size="md" @click="onFileClick" />
-          <input ref="fileRef" type="file" class="hidden" accept=".jpg, .jpeg, .png, .gif" @change="onFileChange">
-        </UFormGroup>
-        <UFormGroup name="bio" label="Bio" description="Brief description for your profile. URLs are hyperlinked."
-          class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
-          <UTextarea v-model="state.bio" :rows="5" autoresize size="md" />
-        </UFormGroup>
-        <UFormGroup name="password" label="Password"
-          description="Confirm your current password before setting a new one." class="grid grid-cols-2 gap-2"
-          :ui="{ container: '' }">
-          <UInput id="password" v-model="state.password_current" type="password" placeholder="Current password"
-            size="md" />
-          <UInput id="password_new" v-model="state.password_new" type="password" placeholder="New password" size="md"
-            class="mt-2" />
-        </UFormGroup>
-      </UiDashboardSection>
-    </UForm>
-    <UDivider class="mb-4" />
-    <UiDashboardSection title="Account"
-      description="No longer want to use our service? You can delete your account here. This action is not reversible. All information related to this account will be deleted permanently.">
-      <div>
-        <UButton color="red" label="Delete account" size="md" @click="isDeleteAccountModalOpen = true" />
-      </div>
-    </UiDashboardSection>
-    <SettingsDeleteAccountModal v-model="isDeleteAccountModalOpen" />
-  </UiDashboardPanelContent>
+	<UiDashboardPage>
+		<UiDashboardPanel grow>
+			<UiDashboardNavbar title="Settings">
+				<template #right>
+					<UButton type="submit" label="Save" />
+				</template>
+			</UiDashboardNavbar>
+			<UiDashboardPanelContent class="pb-24">
+				<UForm
+					id="form-setting"
+					:state="state"
+					:validate="validate"
+					:validate-on="['submit']"
+					@submit="onSubmit"
+				>
+					<UiDashboardSection>
+						<UFormGroup
+							name="name"
+							label="Name"
+							description="Will appear on receipts, invoices, and other communication."
+							required
+							class="grid grid-cols-2 gap-2 !border-t-0 !pt-0"
+							:ui="{ container: '' }"
+						>
+							<UInput
+								v-model="state.name"
+								autocomplete="off"
+								icon="i-heroicons-user"
+								size="md"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="email"
+							label="Email"
+							description="Your unique email."
+							required
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UInput
+								v-model="state.email"
+								type="email"
+								autocomplete="off"
+								icon="i-heroicons-envelope"
+								size="md"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="phone"
+							label="Phone"
+							description="Your unique phone."
+							required
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UInput
+								v-model="state.phone"
+								type="phone"
+								autocomplete="off"
+								size="md"
+								icon="i-heroicons-phone"
+							>
+							</UInput>
+						</UFormGroup>
+						<UFormGroup
+							name="address"
+							label="Address"
+							description="Your unique address."
+							required
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UInput
+								v-model="state.address"
+								type="address"
+								autocomplete="off"
+								size="md"
+								icon="i-heroicons-map-pin"
+							>
+							</UInput>
+						</UFormGroup>
+						<UFormGroup
+							name="favicon"
+							label="Favicon"
+							description="The most common format is .ico but formats like .png and .jpg are also supported by modern browsers."
+							required
+							class="grid grid-cols-2 gap-2"
+							help="ICO. 1MB Max."
+							:ui="{
+								container: 'flex flex-wrap items-center gap-3',
+								help: 'mt-0',
+							}"
+						>
+							<UAvatar
+								:src="state.favicon"
+								alt="Favicon"
+								size="lg"
+							/>
+							<UButton
+								label="Choose"
+								color="white"
+								size="md"
+								@click="onFileClick"
+							/>
+							<input
+								ref="fileRef"
+								type="file"
+								class="hidden"
+								accept=".ico"
+								@change="onFileChange"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="title"
+							label="Title"
+							description="Aim for around 50-60 characters to ensure the full title displays in search results."
+							class="grid grid-cols-2 gap-2"
+						>
+							<UInput
+								v-model="state.title"
+								size="md"
+								autocomplete="false"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="keyword"
+							label="Keyword"
+							description="Focus on incorporating keywords naturally throughout your content"
+							class="grid grid-cols-2 gap-2"
+						>
+							<UInput
+								v-model="state.keyword"
+								size="md"
+								autocomplete="false"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="description"
+							label="Description"
+							description="Aim for around 155 characters to avoid truncation in search results."
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UTextarea
+								v-model="state.description"
+								:rows="5"
+								autoresize
+								size="md"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="daily_email"
+							label="Daily email"
+							description="Receive a daily email digest."
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UToggle
+								v-model="state.daily_email"
+								size="md"
+								@update:model-value="onChange"
+							/>
+						</UFormGroup>
+						<UFormGroup
+							name="desktop"
+							label="Desktop"
+							description="Receive desktop notifications."
+							class="grid grid-cols-2 gap-2"
+							:ui="{ container: '' }"
+						>
+							<UToggle
+								v-model="state.desktop"
+								size="md"
+								@update:model-value="onChange"
+							/>
+						</UFormGroup>
+					</UiDashboardSection>
+				</UForm>
+			</UiDashboardPanelContent>
+		</UiDashboardPanel>
+	</UiDashboardPage>
 </template>

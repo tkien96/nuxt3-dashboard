@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "admin" });
-	import { label } from "@unovis/ts/components/axis/style";
 	import type { User } from "~/types/dashboard";
 	const defaultColumns = [
 		{
@@ -78,37 +77,39 @@
 			selected.value.splice(index, 1);
 		}
 	}
-
 	const items = (row: any) => [
 		[
 			{
 				label: "Edit",
 				icon: "i-heroicons-pencil-square-20-solid",
-				click: () => console.log("Edit", row.id),
+				to: `/admin/users/${ row.id }`
 			},
 			{
 				label: "Duplicate",
 				icon: "i-heroicons-document-duplicate-20-solid",
+				click: () => console.log("Duplicate", row.id),
 			},
 		],
 		[
 			{
 				label: "Archive",
 				icon: "i-heroicons-archive-box-20-solid",
+				click: () => console.log("Archive", row.id),
 			},
 			{
 				label: "Move",
 				icon: "i-heroicons-arrow-right-circle-20-solid",
+				click: () => console.log("Move", row.id),
 			},
 		],
 		[
 			{
 				label: "Delete",
 				icon: "i-heroicons-trash-20-solid",
+				click: () => console.log("Delete", row.id),
 			},
 		],
 	];
-
 	defineShortcuts({
 		"/": () => {
 			input.value?.input?.focus();
@@ -118,7 +119,7 @@
 <template>
 	<UiDashboardPage>
 		<UiDashboardPanel grow>
-			<UiDashboardNavbar title="Users" :badge="users.length">
+			<UiDashboardNavbar title="Users">
 				<template #right>
 					<UInput
 						ref="input"
@@ -136,7 +137,7 @@
 					<UButton
 						label="New user"
 						trailing-icon="i-heroicons-plus"
-						color="gray"
+						to="/admin/users/_"
 						@click="isNewUserModalOpen = true"
 					/>
 				</template>

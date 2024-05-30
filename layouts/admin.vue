@@ -1,7 +1,5 @@
 <script setup lang="ts">
-	const route = useRoute();
-	const appConfig = useAppConfig();
-	const { isHelpSlideoverOpen } = useDashboard();
+	// TODO: Get data in table menus 
 	const links = [
 		{
 			id: "home",
@@ -35,30 +33,18 @@
 					exact: true,
 				},
 				{
-					label: "Members",
-					to: "/admin/settings/members",
+					label: "Menus",
+					to: "/admin/settings/menus",
 				},
 				{
-					label: "Notifications",
-					to: "/admin/settings/notifications",
-				},
+					label: "Options",
+					to: "/admin/settings/options",
+				}
 			],
 			tooltip: {
 				text: "Settings",
 				shortcuts: ["G", "S"],
 			},
-		},
-	];
-	const footerLinks = [
-		{
-			label: "Invite people",
-			icon: "i-heroicons-plus",
-			to: "/admin/settings/members",
-		},
-		{
-			label: "Help & Support",
-			icon: "i-heroicons-question-mark-circle",
-			click: () => (isHelpSlideoverOpen.value = true),
 		},
 	];
 	const groups = [
@@ -69,42 +55,8 @@
 				...link,
 				shortcuts: link.tooltip?.shortcuts,
 			})),
-		},
-		{
-			key: "code",
-			label: "Code",
-			commands: [
-				{
-					id: "source",
-					label: "View page source",
-					icon: "i-simple-icons-github",
-					click: () => {
-						window.open(
-							`https://github.com/nuxt-ui-pro/dashboard/blob/main/pages${
-								route.path === "/" ? "/index" : route.path
-							}.vue`,
-							"_blank"
-						);
-					},
-				},
-			],
-		},
+		}
 	];
-	const defaultColors = ref(
-		["green", "teal", "cyan", "sky", "blue", "indigo", "violet"].map(
-			(color) => ({
-				label: color,
-				chip: color,
-				click: () => (appConfig.ui.primary = color),
-			})
-		)
-	);
-	const colors = computed(() =>
-		defaultColors.value.map((color) => ({
-			...color,
-			active: appConfig.ui.primary === color.label,
-		}))
-	);
 </script>
 <template>
 	<UiDashboardLayout>
@@ -126,15 +78,7 @@
 					<UiDashboardSearchButton />
 				</template>
 				<UiDashboardSidebarLinks :links="links" />
-				<UDivider />
-				<UiDashboardSidebarLinks
-					:links="[
-						{ label: 'Colors', draggable: true, children: colors },
-					]"
-					@update:links="(colors) => (defaultColors = colors)"
-				/>
 				<div class="flex-1" />
-				<UiDashboardSidebarLinks :links="footerLinks" />
 				<UDivider class="sticky bottom-0" />
 				<template #footer>
 					<UserDropdown />

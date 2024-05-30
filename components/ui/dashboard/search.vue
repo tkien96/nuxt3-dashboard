@@ -79,7 +79,6 @@ const router = useRouter()
 const { usingInput } = useShortcuts()
 const { isDashboardSearchModalOpen } = useUIState()
 const breakpoints = useBreakpoints(breakpointsTailwind)
-const colorMode = useColorMode()
 const { ui, attrs } = useUI('dashboard.search', toRef(props, 'ui'), config, undefined, true)
 const smallerThanSm = breakpoints.smaller('sm')
 const commandPaletteRef = ref<HTMLElement & { query: Ref<string>, results: { item: Command }[] }>()
@@ -106,27 +105,7 @@ const fuse: ComputedRef<Partial<UseFuseOptions<Command>>> = computed(() => defu(
   resultLimit: 12
 }))
 const groups = computed(() => {
-  return [...(props.groups || []), !colorMode?.forced && !props.hideColorMode && {
-    key: 'theme',
-    label: 'Theme',
-    commands: [{
-      id: 'theme-light',
-      label: 'Light',
-      icon: appConfig.ui.icons.light,
-      disabled: colorMode.preference === 'light',
-      click: () => {
-        colorMode.preference = 'light'
-      }
-    }, {
-      id: 'theme-dark',
-      label: 'Dark',
-      icon: appConfig.ui.icons.dark,
-      disabled: colorMode.preference === 'dark',
-      click: () => {
-        colorMode.preference = 'dark'
-      }
-    }]
-  }].filter(Boolean) as Group[]
+  return [...(props.groups || [])].filter(Boolean) as Group[]
 })
 // avoid conflicts between multiple meta_k shortcuts
 const canToggleModal = computed(() => isOpen.value || !usingInput.value)

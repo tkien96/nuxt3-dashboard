@@ -67,7 +67,7 @@ export interface DashboardSidebarLink extends Link {
   children?: DashboardSidebarLink[]
 }
 
-export type UserStatus = 'ACTIVE' | 'NONACTIVE' | 'DELETED'
+export type EStatus = 'ACTIVE' | 'NONACTIVE' | 'DELETED'
 export type UserClassification = 'SYSTEM' | 'ADMINISTRATOR' | 'MEMBERSHIP' | 'VISITOR'
 
 export interface User {
@@ -76,7 +76,7 @@ export interface User {
   phone: string
   email: string
   avatar?: Avatar
-  status: UserStatus
+  status: EStatus
   address?: string
   classification: UserClassification
 }
@@ -110,4 +110,16 @@ export type Period = 'daily' | 'weekly' | 'monthly'
 export interface Range {
   start: Date
   end: Date
+}
+
+// Menu
+export interface Menus {
+  id: number
+  parent: number
+  to: string
+  icon: string
+  exact?: boolean
+  tooltip?: String
+  shortcuts?: string
+  status: EStatus
 }

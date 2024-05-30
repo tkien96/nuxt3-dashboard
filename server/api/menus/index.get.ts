@@ -1,3 +1,5 @@
+import { get_menus } from "~/server/models/menus"
+
 export default defineEventHandler(async (event) => {
-  return 'Hello Nitro'
+  return await get_menus()
 })
