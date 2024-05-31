@@ -2,7 +2,8 @@
 import { formatTimeAgo } from '@vueuse/core'
 import type { Notification } from '@/types/dashboard'
 const { isNotificationsSlideoverOpen } = useDashboard()
-const { data: notifications } = await useFetch<Notification[]>('/api/notifications')
+// const { data: notifications } = await useFetch<Notification[]>('/api/notifications')
+const notifications:any = []
 </script>
 <template>
   <UiDashboardSlideover v-model="isNotificationsSlideoverOpen" title="Notifications">

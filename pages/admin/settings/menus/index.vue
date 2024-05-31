@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "admin" });
+import { item } from "@unovis/ts/components/bullet-legend/style";
 	import type { Menus } from "~/types/dashboard";
+	const menusStore = useMenusStore()
+
 	// TODO: Get columns on database
 	const defaultColumns = [
 		{
@@ -58,14 +61,11 @@
 		sort: sort.value.column,
 		order: sort.value.direction,
 	}));
-	const { data: menus, pending } = await useFetch<Menus[]>("/api/menus", {
-		query,
-		default: () => [],
-	});
-	const defaultStatuses = menus.value.reduce((acc, menu) => {
-		if (!acc.includes(menu.status)) acc.push(menu.status);
-		return acc;
-	}, [] as string[]);
+	menusStore.getMenus(query)
+	// const defaultStatuses = menusStore.menus.reduce((acc: any, menu: any) => {
+	// 	if (!acc.includes(menu.status)) acc.push(menu.status);
+	// 	return acc;
+	// }, [] as string[]);
 	function onSelect(row: Menus) {
 		const index = selected.value.findIndex((item) => item.id === row.id);
 		if (index === -1) {
@@ -80,7 +80,10 @@
 			{
 				label: "Edit",
 				icon: "i-heroicons-pencil-square-20-solid",
-				to: `/admin/menus/${row.id}`,
+				click: () => {
+					menusStore.setMenuSelected(row)
+					showModal()
+				},
 			},
 			{
 				label: "Duplicate",
@@ -113,6 +116,14 @@
 			input.value?.input?.focus();
 		},
 	});
+
+	function showModal() {
+		isNewModalOpen.value = true
+	}
+
+	watch(isNewModalOpen, () => {
+		if(!isNewModalOpen) menusStore.setMenuSelected(undefined)
+	});
 </script>
 <template>
 	<UiDashboardPage>
@@ -135,12 +146,12 @@
 					<UButton
 						label="New Menu"
 						trailing-icon="i-heroicons-plus"
-						@click="isNewModalOpen = true"
+						@click="showModal()"
 					/>
 				</template>
 			</UiDashboardNavbar>
 			<UiDashboardToolbar>
-				<template #left>
+				<!-- <template #left>
 					<USelectMenu
 						v-model="selectedStatuses"
 						icon="i-heroicons-check-circle"
@@ -149,7 +160,7 @@
 						:options="defaultStatuses"
 						:ui-menu="{ option: { base: 'capitalize' } }"
 					/>
-				</template>
+				</template> -->
 				<template #right>
 					<USelectMenu
 						v-model="selectedColumns"
@@ -173,9 +184,8 @@
 			<UTable
 				v-model="selected"
 				v-model:sort="sort"
-				:rows="menus"
+				:rows="menusStore.menus"
 				:columns="columns"
-				:loading="pending"
 				sort-mode="manual"
 				class="w-full"
 				:ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
@@ -185,10 +195,10 @@
 					label: 'No items.',
 				}"
 			>
-				<template #name-data="{ row }">
+				<template #icon-data="{ row }">
 					<div class="flex items-center gap-3">
 						<UIcon :name="row.icon" class="text-sm" />
-						<span class="text-gray-900 dark:text-white font-medium">{{ row.name }}</span>
+						<span class="text-gray-900 dark:text-white font-medium">{{ row.icon }}</span>
 					</div>
 				</template>
 				<template #status-data="{ row }">

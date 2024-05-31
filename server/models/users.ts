@@ -1,49 +1,34 @@
-import { db } from ".";
+import { prismaCreate, prismaFindMany, prismaFindUnique, prismaUpdate } from ".";
 
-export const get_user = async (id: Number) => {
-    const user = await db.users.findUnique({
-        where: {
-            id: Number(id),
-        },
-    });
+export const usersFindUnique = async (id: Number) => {
+    const user = await prismaFindUnique("users", { where: { id: id } });
     if(user) {
-        return await transform(user);
+        return await usersTransform(user);
     } else throw createError({ statusCode: 404, message: 'User not found' })
 };
 
-export const get_users = async () => {
-	const users = await db.users.findMany({
-		where: {
-			status: "ACTIVE",
-		},
-	});
-	return await users.map((user) => {
-		return transform(user);
+export const usersFindMany = async (queries: any) => {
+    const users = await prismaFindMany("users", queries);
+	return await users.map((user: any) => {
+		return usersTransform(user);
 	});
 };
 
-export const update = async (id: Number, data: any) => {
-    const user = await db.users.update({
-        where: {
-            id: Number(id)
-        },
-        data: data
-    })
+export const usersUpdate = async (id: Number, data: any) => {
+    const user = await prismaUpdate('users', Number(id), data)
     if(user) {
-        return await transform(user);
+        return await usersTransform(user);
     } else throw createError({ statusCode: 404, message: 'Update failed' })
 }
 
-export const create = async(data: any) => {
-    const user = await db.users.create({
-        data: data
-    })
+export const usersCreate = async(data: any) => {
+    const user = await prismaCreate('users', data)
     if(user) {
-        return await transform(user);
+        return await usersTransform(user);
     } else throw createError({ statusCode: 404, message: 'Create failed' })
 }
 
-function transform(data: any) {
+function usersTransform(data: any) {
 	const { id, name, email, phone, birthdate, address, avatar, classification, status } = data;
 	return {
 		id,

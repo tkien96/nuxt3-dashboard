@@ -1,15 +1,20 @@
 <script setup lang="ts">
 	import type { FormError, FormSubmitEvent } from "#ui/types";
+
+	const menusStore = useMenusStore()
+	const menus = menusStore.menus
+	const menuSelected = menusStore.menuSelected
+
 	const emit = defineEmits(["close"]);
     const toast = useToast();
 	const state = reactive({
-		parent: 0,
-		name: undefined,
-		to: undefined,
-		icon: undefined,
-		exact: false,
-		tooltip: undefined,
-		shortcuts: undefined,
+		parent: menuSelected?.parent || undefined,
+		name: menuSelected?.name || undefined,
+		to: menuSelected?.to || undefined,
+		icon: menuSelected?.icon || undefined,
+		exact: menuSelected?.exact || false,
+		tooltip: menuSelected?.name || undefined,
+		shortcuts: menuSelected?.shortcuts || undefined,
 	});
 	const validate = (state: any): FormError[] => {
 		const errors = [];
@@ -20,55 +25,53 @@
 		return errors;
 	};
 
-	const menus = [
-		{
-			id: 'Default',
-            value: 0,
-			label: "Select Parent",
-			icon: "i-heroicons-inbox-arrow-down",
-		},
-		{
-			id: 'Home',
-            value: 1,
-			label: "Home",
-			icon: "i-heroicons-home",
-			to: "/admin",
-			shortcuts: ["G", "H"],
-		},
-		{
-			id: 'Users',
-            value: 2,
-			label: "Users",
-			icon: "i-heroicons-user-group",
-			to: "/admin/users",
-			shortcuts: ["G", "U"],
-		},
-		{
-			id: 'Settings',
-            value: 3,
-			label: "Settings",
-			to: "/admin/settings",
-			icon: "i-heroicons-cog-8-tooth",
-			shortcuts: ["G", "S"],
-		},
-	];
-	const parentSelected = ref(menus[0]);
+	
+	// const parents: any = [];
+	// menus.map((item: any) => {
+	// 	if(item.parent == 0) parents.push({
+	// 		id: item.name,
+    //         value: item.id,
+	// 		label: item.name.toUpperCase(),
+	// 		to: item?.to,
+	// 		icon: item?.icon,
+	// 		shortcuts: item.shortcuts ? JSON.parse(item.shortcuts) : undefined
+	// 	})
+	// });
+	// const parentSelected = ref(parents[0]);
 
+	const formIsSubmit = ref(false)
 	async function onSubmit(event: FormSubmitEvent<any>) {
-		const data = await event.data;
+		formIsSubmit.value = true
+		const data = await event.data
+		
 		data.created_by = 1;
         data.parent = data.parent.value ? data.parent.value : 0
-		$fetch("/api/menus", {
+
+		let url = '/api/menus',
+		option: any = {
 			method: "POST",
 			body: data,
-		})
+		}
+
+		if(menuSelected) {
+			url += `/${ menuSelected.id }`
+			option.method = 'PUT'
+		}
+
+		await $fetch(url, option)
         .then((result) => {
+			const menus = menusStore.menus
+			menusStore.setMenus([...menus, result])
+			menusStore.setMenuSelected()
             toast.add({ title: 'Added menu successfully', description: 'Notification !', color: "gray" })
             emit("close");
+			formIsSubmit.value = false
         })
         .catch((e) => {
+			menusStore.setMenuSelected()
             toast.add({ title: e.message, description: 'Notification !', color: "red" })
             console.error(e.message)
+			formIsSubmit.value = false
         });
 	}
 </script>
@@ -79,50 +82,45 @@
 		:state="state"
 		class="space-y-4"
 		@submit="onSubmit"
+		:loading="formIsSubmit"
 	>
-		<UFormGroup label="Parent" name="parent">
-			<USelectMenu v-model="parentSelected" :options="menus">
+		<!-- <UFormGroup label="Parent" name="parent">
+			<USelectMenu v-model="parentSelected" :options="parents" :disabled="formIsSubmit">
 				<template #leading>
-					<UIcon
-						v-if="parentSelected.icon"
-						:name="(parentSelected.icon as string)"
-						class="w-5 h-5"
-					/>
+					<UIcon v-if="parentSelected?.icon" :name="(parentSelected?.icon)" class="w-5 h-5" />
 				</template>
-				<template v-if="parentSelected.shortcuts" #trailing>
-					<UKbd
-						class="m-[0.1em]"
-						v-for="tooltip in parentSelected.shortcuts"
-						:value="tooltip"
-					/>
+				<template v-if="parentSelected?.shortcuts" #trailing>
+					<UKbd class="m-[0.1em]" v-for="tooltip in parentSelected?.shortcuts" :value="tooltip" />
 				</template>
 			</USelectMenu>
-		</UFormGroup>
+		</UFormGroup> -->
 		<UFormGroup required label="Name" name="name">
-			<UInput v-model="state.name" placeholder="Home" autofocus />
+			<UInput v-model="state.name" placeholder="Home" :disabled="formIsSubmit" autofocus />
 		</UFormGroup>
 		<UFormGroup required label="To" name="to">
-			<UInput v-model="state.to" placeholder="/admin/menus" />
+			<UInput v-model="state.to" placeholder="/admin/menus" :disabled="formIsSubmit" />
 		</UFormGroup>
 		<UFormGroup label="Icon" name="icon">
-			<UInput v-model="state.icon" placeholder="i-heroicons-[name]" />
+			<UInput v-model="state.icon" placeholder="i-heroicons-[name]" :disabled="formIsSubmit" />
 		</UFormGroup>
 		<UFormGroup label="Tooltip" name="tooltip">
-			<UInput v-model="state.tooltip" placeholder="tooltip" />
+			<UInput v-model="state.tooltip" placeholder="tooltip" :disabled="formIsSubmit" />
 		</UFormGroup>
 		<UFormGroup label="Shortcuts" name="shortcuts">
-			<UInput v-model="state.shortcuts" placeholder='["G", "H"]' />
+			<UInput v-model="state.shortcuts" placeholder='["G", "H"]' :disabled="formIsSubmit" />
 		</UFormGroup>
 		<UFormGroup label="Exact" name="exact">
 			<UToggle
 				v-model="state.exact"
 				size="md"
 				@update:model-value="!state.exact"
+				:disabled="formIsSubmit"
 			/>
 		</UFormGroup>
 		<div class="flex justify-end gap-3">
 			<UButton label="Cancel" color="red" @click="emit('close')" />
-			<UButton type="submit" label="Save" />
+			<UButton v-if="menuSelected" type="submit" label="Update" :loading="formIsSubmit" />
+			<UButton v-if="!menuSelected" type="submit" label="Save" :loading="formIsSubmit" />
 		</div>
 	</UForm>
 </template>

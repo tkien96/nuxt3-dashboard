@@ -1,5 +1,6 @@
-import { get_users } from "~/server/models/users"
+import { usersFindMany } from "~/server/models/users"
 
 export default defineEventHandler(async (event) => {
-  return await get_users()
+  const query = getQuery(event);
+  return await usersFindMany(query)
 })
