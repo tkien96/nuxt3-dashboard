@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	definePageMeta({ layout: 'admin', })
+	definePageMeta({ layout: "admin" });
 	import type { FormError, FormSubmitEvent } from "#ui/types";
 	const fileRef = ref<HTMLInputElement>();
 	const state = reactive({
@@ -10,11 +10,7 @@
 		favicon: "",
 		title: "",
 		keyword: "",
-		description: "",
-		password_current: "",
-		password_new: "",
-		daily_email: true,
-		desktop: true,
+		description: ""
 	});
 	const toast = useToast();
 	function validate(state: any): FormError[] {
@@ -38,11 +34,18 @@
 		fileRef.value?.click();
 	}
 	async function onSubmit(event: FormSubmitEvent<any>) {
-		console.log(event.data);
-		toast.add({
-			title: "Profile updated",
-			icon: "i-heroicons-check-circle",
-		});
+		const data = await event.data
+		await $fetch(`/api/setting`, data)
+        .then((result) => {
+			const setting = settingStore.data
+            toast.add({ title: 'Update Setting successfully', description: 'Notification !', color: "gray", icon: "i-heroicons-check-circle" })
+            emit("close");
+        })
+        .catch((e) => {
+			menusStore.setMenuSelected()
+            toast.add({ title: e.message, description: 'Notification !', color: "red" })
+            console.error(e.message)
+        });
 	}
 	async function onChange() {
 		// Do something with data
@@ -198,32 +201,6 @@
 								:rows="5"
 								autoresize
 								size="md"
-							/>
-						</UFormGroup>
-						<UFormGroup
-							name="daily_email"
-							label="Daily email"
-							description="Receive a daily email digest."
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UToggle
-								v-model="state.daily_email"
-								size="md"
-								@update:model-value="onChange"
-							/>
-						</UFormGroup>
-						<UFormGroup
-							name="desktop"
-							label="Desktop"
-							description="Receive desktop notifications."
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UToggle
-								v-model="state.desktop"
-								size="md"
-								@update:model-value="onChange"
 							/>
 						</UFormGroup>
 					</UiDashboardSection>
