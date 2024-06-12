@@ -28,6 +28,20 @@ enum EClassification {
   VISITOR
 }
 
+model setting {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(255)
+  email       String  @db.VarChar(100)
+  phone       String  @db.VarChar(20)
+  address     String  @db.VarChar(255)
+  title       String? @db.VarChar(255)
+  keyword     String? @db.VarChar(255)
+  description String? @db.VarChar(255)
+  color       String? @db.VarChar(50)
+  theme       String? @db.VarChar(50)
+  favicon     String? @db.VarChar(255)
+}
+
 model users {
   id                               Int                        @id @default(autoincrement())
   name                             String                     @db.VarChar(255)

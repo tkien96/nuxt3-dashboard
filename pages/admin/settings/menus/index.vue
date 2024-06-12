@@ -1,8 +1,30 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "admin" });
 	import type { Menus } from "~/types/dashboard";
-	const menusStore = useMenusStore();
 
+	const q = ref("");
+	const selected = ref<Menus[]>([]);
+	const sort = ref({ column: "id", direction: "asc" as const });
+
+	const selectedStatuses = ref([]);
+	// const defaultStatuses = menusStore.menus.reduce((acc: any, menu: any) => {
+	// 	if (!acc.includes(menu.status)) acc.push(menu.status);
+	// 	return acc;
+	// }, [] as string[]);
+
+	const query = computed(() => ({
+		q: q.value,
+		statuses: selectedStatuses.value,
+		sort: sort.value.column,
+		order: sort.value.direction,
+	}));
+
+	// Menus Store
+	const menusStore = useMenusStore()
+	menusStore.getMenus(query)
+	const menus = menusStore.menus
+
+	// Column show
 	// TODO: Get columns on database
 	const defaultColumns = [
 		{
@@ -42,39 +64,27 @@
 			label: "Actions",
 		},
 	];
-	const q = ref("");
-	const selected = ref<Menus[]>([]);
 	const selectedColumns = ref(defaultColumns);
-	// TODO: Danh sách status
-	const selectedStatuses = ref([]);
-	const sort = ref({ column: "id", direction: "asc" as const });
-	const input = ref<{ input: HTMLInputElement }>();
-	const isNewModalOpen = ref(false);
 	const columns = computed(() =>
 		defaultColumns.filter((column) =>
 			selectedColumns.value.includes(column)
 		)
 	);
-	const query = computed(() => ({
-		q: q.value,
-		statuses: selectedStatuses.value,
-		sort: sort.value.column,
-		order: sort.value.direction,
-	}));
-	menusStore.getMenus(query);
-	const menus = menusStore.menus
-	// const defaultStatuses = menus.reduce((acc: any, menu: any) => {
-	// 	if (!acc.includes(menu.status)) acc.push(menu.status);
-	// 	return acc;
-	// }, [] as string[]);
-	function onSelect(row: Menus) {
+
+	// Modal Menus
+	const isNewModalOpen = ref(false);
+	function showModal() {
+		isNewModalOpen.value = true
+	}
+
+	function onSelectRow(row: Menus) {
 		const index = selected.value.findIndex((item) => item.id === row.id);
 		if (index === -1) {
 			selected.value.push(row);
-		} else {
-			selected.value.splice(index, 1);
-		}
+		} else selected.value.splice(index, 1);
 	}
+
+	// Actions
 	// TODO: Get data on functions
 	const items = (row: any) => [
 		[
@@ -112,15 +122,14 @@
 			},
 		],
 	];
+
+	// ShortCuts
+	const input = ref<{ input: HTMLInputElement }>();
 	defineShortcuts({
-		"/": () => {
+		"/adnin": () => {
 			input.value?.input?.focus();
 		},
 	});
-
-	function showModal() {
-		isNewModalOpen.value = true;
-	}
 
 	watch(isNewModalOpen, () => {
 		if (!isNewModalOpen) menusStore.setMenuSelected(undefined);
@@ -190,7 +199,7 @@
 				sort-mode="manual"
 				class="w-full"
 				:ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
-				@select="onSelect"
+				@select="onSelectRow"
 				:empty-state="{
 					icon: 'i-heroicons-circle-stack-20-solid',
 					label: 'No items.',
