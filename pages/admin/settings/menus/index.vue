@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "admin" });
-import { item } from "@unovis/ts/components/bullet-legend/style";
 	import type { Menus } from "~/types/dashboard";
-	const menusStore = useMenusStore()
+	const menusStore = useMenusStore();
 
 	// TODO: Get columns on database
 	const defaultColumns = [
@@ -46,6 +45,7 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 	const q = ref("");
 	const selected = ref<Menus[]>([]);
 	const selectedColumns = ref(defaultColumns);
+	// TODO: Danh sách status
 	const selectedStatuses = ref([]);
 	const sort = ref({ column: "id", direction: "asc" as const });
 	const input = ref<{ input: HTMLInputElement }>();
@@ -61,8 +61,9 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 		sort: sort.value.column,
 		order: sort.value.direction,
 	}));
-	menusStore.getMenus(query)
-	// const defaultStatuses = menusStore.menus.reduce((acc: any, menu: any) => {
+	menusStore.getMenus(query);
+	const menus = menusStore.menus
+	// const defaultStatuses = menus.reduce((acc: any, menu: any) => {
 	// 	if (!acc.includes(menu.status)) acc.push(menu.status);
 	// 	return acc;
 	// }, [] as string[]);
@@ -81,8 +82,8 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 				label: "Edit",
 				icon: "i-heroicons-pencil-square-20-solid",
 				click: () => {
-					menusStore.setMenuSelected(row)
-					showModal()
+					menusStore.setMenuSelected(row);
+					showModal();
 				},
 			},
 			{
@@ -118,11 +119,11 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 	});
 
 	function showModal() {
-		isNewModalOpen.value = true
+		isNewModalOpen.value = true;
 	}
 
 	watch(isNewModalOpen, () => {
-		if(!isNewModalOpen) menusStore.setMenuSelected(undefined)
+		if (!isNewModalOpen) menusStore.setMenuSelected(undefined);
 	});
 </script>
 <template>
@@ -184,7 +185,7 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 			<UTable
 				v-model="selected"
 				v-model:sort="sort"
-				:rows="menusStore.menus"
+				:rows="menus"
 				:columns="columns"
 				sort-mode="manual"
 				class="w-full"
@@ -198,7 +199,10 @@ import { item } from "@unovis/ts/components/bullet-legend/style";
 				<template #icon-data="{ row }">
 					<div class="flex items-center gap-3">
 						<UIcon :name="row.icon" class="text-sm" />
-						<span class="text-gray-900 dark:text-white font-medium">{{ row.icon }}</span>
+						<span
+							class="text-gray-900 dark:text-white font-medium"
+							>{{ row.icon }}</span
+						>
 					</div>
 				</template>
 				<template #status-data="{ row }">

@@ -26,18 +26,18 @@
 	};
 
 	
-	// const parents: any = [];
-	// menus.map((item: any) => {
-	// 	if(item.parent == 0) parents.push({
-	// 		id: item.name,
-    //         value: item.id,
-	// 		label: item.name.toUpperCase(),
-	// 		to: item?.to,
-	// 		icon: item?.icon,
-	// 		shortcuts: item.shortcuts ? JSON.parse(item.shortcuts) : undefined
-	// 	})
-	// });
-	// const parentSelected = ref(parents[0]);
+	const parents: any = [];
+	menus.map((item: any) => {
+		if(item.parent == 0) parents.push({
+			id: item.name,
+            value: item.id,
+			label: item.name.toUpperCase(),
+			to: item?.to,
+			icon: item?.icon,
+			shortcuts: item.shortcuts ? JSON.parse(item.shortcuts) : undefined
+		})
+	});
+	const parentSelected = ref(parents[0]);
 
 	const formIsSubmit = ref(false)
 	async function onSubmit(event: FormSubmitEvent<any>) {
@@ -60,7 +60,6 @@
 
 		await $fetch(url, option)
         .then((result) => {
-			const menus = menusStore.menus
 			menusStore.setMenus([...menus, result])
 			menusStore.setMenuSelected()
             toast.add({ title: 'Added menu successfully', description: 'Notification !', color: "gray" })
@@ -72,6 +71,7 @@
             toast.add({ title: e.message, description: 'Notification !', color: "red" })
             console.error(e.message)
 			formIsSubmit.value = false
+			emit("close");
         });
 	}
 </script>
@@ -84,7 +84,7 @@
 		@submit="onSubmit"
 		:loading="formIsSubmit"
 	>
-		<!-- <UFormGroup label="Parent" name="parent">
+		<UFormGroup label="Parent" name="parent">
 			<USelectMenu v-model="parentSelected" :options="parents" :disabled="formIsSubmit">
 				<template #leading>
 					<UIcon v-if="parentSelected?.icon" :name="(parentSelected?.icon)" class="w-5 h-5" />
@@ -93,7 +93,7 @@
 					<UKbd class="m-[0.1em]" v-for="tooltip in parentSelected?.shortcuts" :value="tooltip" />
 				</template>
 			</USelectMenu>
-		</UFormGroup> -->
+		</UFormGroup>
 		<UFormGroup required label="Name" name="name">
 			<UInput v-model="state.name" placeholder="Home" :disabled="formIsSubmit" autofocus />
 		</UFormGroup>
