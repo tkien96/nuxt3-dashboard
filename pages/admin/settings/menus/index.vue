@@ -1,29 +1,19 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "admin" });
-	import type { Menus } from "~/types/dashboard";
-
 	const q = ref("");
-	const selected = ref<Menus[]>([]);
+	const selected = ref<any[]>([]);
 	const sort = ref({ column: "id", direction: "asc" as const });
-
 	const selectedStatuses = ref([]);
-	// const defaultStatuses = menusStore.menus.reduce((acc: any, menu: any) => {
-	// 	if (!acc.includes(menu.status)) acc.push(menu.status);
-	// 	return acc;
-	// }, [] as string[]);
-
 	const query = computed(() => ({
 		q: q.value,
 		statuses: selectedStatuses.value,
 		sort: sort.value.column,
 		order: sort.value.direction,
 	}));
-
 	// Menus Store
-	const menusStore = useMenusStore()
-	menusStore.getMenus(query)
-	const menus = menusStore.menus
-
+	const menusStore = useMenusStore();
+	await useAsyncData("menuLists", () => menusStore.getMenus(query));
+	const { menuLists, menuPage, menuPageCount } = menusStore;
 	// Column show
 	// TODO: Get columns on database
 	const defaultColumns = [
@@ -70,20 +60,17 @@
 			selectedColumns.value.includes(column)
 		)
 	);
-
 	// Modal Menus
 	const isNewModalOpen = ref(false);
 	function showModal() {
-		isNewModalOpen.value = true
+		isNewModalOpen.value = true;
 	}
-
-	function onSelectRow(row: Menus) {
+	function onSelectRow(row: any) {
 		const index = selected.value.findIndex((item) => item.id === row.id);
 		if (index === -1) {
 			selected.value.push(row);
 		} else selected.value.splice(index, 1);
 	}
-
 	// Actions
 	// TODO: Get data on functions
 	const items = (row: any) => [
@@ -122,17 +109,12 @@
 			},
 		],
 	];
-
 	// ShortCuts
 	const input = ref<{ input: HTMLInputElement }>();
 	defineShortcuts({
 		"/adnin": () => {
 			input.value?.input?.focus();
 		},
-	});
-
-	watch(isNewModalOpen, () => {
-		if (!isNewModalOpen) menusStore.setMenuSelected(undefined);
 	});
 </script>
 <template>
@@ -149,28 +131,26 @@
 						class="hidden lg:block"
 						@keydown.esc="$event.target.blur()"
 					>
-						<template #trailing>
-							<UKbd value="/" />
-						</template>
+						<template #trailing><UKbd value="/" /></template>
 					</UInput>
 					<UButton
 						label="New Menu"
 						trailing-icon="i-heroicons-plus"
-						@click="showModal()"
+						@click="() => { menusStore.setMenuSelected(); showModal(); }"
 					/>
 				</template>
 			</UiDashboardNavbar>
 			<UiDashboardToolbar>
-				<!-- <template #left>
+				<template #left>
 					<USelectMenu
 						v-model="selectedStatuses"
 						icon="i-heroicons-check-circle"
 						placeholder="Status"
 						multiple
-						:options="defaultStatuses"
+						:options="selectedStatuses"
 						:ui-menu="{ option: { base: 'capitalize' } }"
 					/>
-				</template> -->
+				</template>
 				<template #right>
 					<USelectMenu
 						v-model="selectedColumns"
@@ -194,10 +174,11 @@
 			<UTable
 				v-model="selected"
 				v-model:sort="sort"
-				:rows="menus"
+				:rows="menuLists"
 				:columns="columns"
 				sort-mode="manual"
 				class="w-full"
+				draggable="true"
 				:ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
 				@select="onSelectRow"
 				:empty-state="{
@@ -231,6 +212,17 @@
 					</UDropdown>
 				</template>
 			</UTable>
+			<div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+				<UPagination
+					size="sm"
+					:to="(page: number) => (menusStore.setMenuPage(page))"
+					show-last
+					show-first
+					v-model="menuPage"
+					:page-count="menuPageCount"
+					:total="menuLists.length"
+				/>
+			</div>
 		</UiDashboardPanel>
 	</UiDashboardPage>
 </template>

@@ -1,36 +1,68 @@
 import { defineStore } from "pinia";
 
 export const useMenusStore = defineStore("menusStore", () => {
-	const menus = ref();
+	const menuLists = ref([]);
 	const menuSelected = ref();
-	const menuParents = ref();
+	const menuPage = ref(1)
+	const menuPageCount = ref(5)
 
-	const setMenus = (data?: any) => (menus.value = data);
+	const menuParentDefault = [{
+		id: undefined,
+		value: 0,
+		label: 'Select Parent',
+		to: undefined,
+		icon: 'i-heroicons-magnifying-glass',
+		shortcuts: undefined,
+	}]
+	const menuParents = ref(menuParentDefault);
+
+	const setMenuList = (data?: any) => (menuLists.value = data);
 	const setMenuSelected = (data?: any) => (menuSelected.value = data);
-	const setMenuParent = (data?: any) => (menuParents.value = data);
+	const setMenuParents = (data?: any) => (menuParents.value = data);
+	const setMenuPage = (page: number) => (menuPage.value = page);
+	const setMenuPageCount = (pageCount: number) => (menuPageCount.value = pageCount);
 
-	const getMenus = async (query: any) => {
+	function $reset() {
+		setMenuList([]);
+		setMenuSelected();
+	};
+
+	const getMenus = async (query: {}) => {
 		try {
 			const { data: menus } = await useFetch<any>("/api/menus", {
 				query,
 				default: () => [],
 			});
-			setMenus(menus);
+			setMenuList(menus);
 
-			const parents = await menus.filter((item: any) => item.parent === 0)
+			const parents = menus.value.filter((item: any) => item.parent === 0)
 				.map((item: any) => ({
 					id: item.name,
 					value: item.id,
-					label: item.name.toUpperCase(),
+					label: item.name,
 					to: item.to,
 					icon: item.icon,
 					shortcuts: item.shortcuts ? JSON.parse(item.shortcuts) : undefined,
 				}));
-			setMenuParent(parents)
+				setMenuParents([...menuParentDefault, ...parents])
 		} catch (error) {
 			console.error(error);
-			setMenus();
+			setMenuList();
 		}
 	};
-	return { menus, menuSelected, menuParents, setMenus, setMenuSelected, getMenus, setMenuParent };
+
+	return {
+		menuLists,
+		menuSelected,
+		menuParentDefault,
+		menuParents,
+		menuPage,
+		menuPageCount,
+		setMenuList,
+		setMenuSelected,
+		getMenus,
+		setMenuPage,
+		setMenuPageCount,
+		$reset
+	};
 });

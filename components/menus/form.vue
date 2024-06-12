@@ -2,13 +2,12 @@
 	import type { FormError, FormSubmitEvent } from "#ui/types";
 
 	const menusStore = useMenusStore()
-	const menus = menusStore.menus
-	const menuSelected = menusStore.menuSelected
+	const { menuSelected, menuParents, menuParentDefault } = menusStore
 
 	const emit = defineEmits(["close"]);
     const toast = useToast();
 	const state = reactive({
-		parent: menuSelected?.parent || undefined,
+		parent: menuSelected?.parent || 0,
 		name: menuSelected?.name || undefined,
 		to: menuSelected?.to || undefined,
 		icon: menuSelected?.icon || undefined,
@@ -16,6 +15,11 @@
 		tooltip: menuSelected?.name || undefined,
 		shortcuts: menuSelected?.shortcuts || undefined,
 	});
+
+	// Parent Selected
+	const parentSelected = ref();
+	parentSelected.value = menuSelected ? menuParents.filter((item: any) => item.value == menuSelected.parent)[0] : menuParentDefault
+
 	const validate = (state: any): FormError[] => {
 		const errors = [];
 		if (!state.name)
@@ -25,54 +29,48 @@
 		return errors;
 	};
 
-	
-	const parents: any = [];
-	menus.map((item: any) => {
-		if(item.parent == 0) parents.push({
-			id: item.name,
-            value: item.id,
-			label: item.name.toUpperCase(),
-			to: item?.to,
-			icon: item?.icon,
-			shortcuts: item.shortcuts ? JSON.parse(item.shortcuts) : undefined
-		})
-	});
-	const parentSelected = ref(parents[0]);
+	const refreshData =() => {
+		menusStore.getMenus({})
+		menusStore.setMenuSelected()
+	}
 
+	// Form submit
 	const formIsSubmit = ref(false)
 	async function onSubmit(event: FormSubmitEvent<any>) {
 		formIsSubmit.value = true
 		const data = await event.data
-		
+		// TODO: Get user login
 		data.created_by = 1;
-        data.parent = data.parent.value ? data.parent.value : 0
-
-		let url = '/api/menus',
-		option: any = {
-			method: "POST",
-			body: data,
-		}
-
+		if(!data.parent) data.parent = 0
 		if(menuSelected) {
-			url += `/${ menuSelected.id }`
-			option.method = 'PUT'
+			await $fetch(`/api/menus/${ menuSelected.id }`, { method: "PUT", body: data, })
+			.then((result) => {
+				refreshData()
+				toast.add({ title: 'Update menu successfully', description: 'Notification !', color: "cyan" })
+				emit("close");
+				formIsSubmit.value = false
+			})
+			.catch((e) => {
+				toast.add({ title: e.message, description: 'Notification !', color: "red" })
+				formIsSubmit.value = false
+				emit("close");
+				console.error(e.message)
+			});
+		} else {
+			await $fetch(`/api/menus`, { method: "POST", body: data, })
+			.then((result) => {
+				refreshData()
+				toast.add({ title: 'Add menu successfully', description: 'Notification !', color: "green" })
+				emit("close");
+				formIsSubmit.value = false
+			})
+			.catch((e) => {
+				toast.add({ title: e.message, description: 'Notification !', color: "red" })
+				formIsSubmit.value = false
+				emit("close");
+				console.error(e.message)
+			});
 		}
-
-		await $fetch(url, option)
-        .then((result) => {
-			menusStore.setMenus([...menus, result])
-			menusStore.setMenuSelected()
-            toast.add({ title: 'Added menu successfully', description: 'Notification !', color: "gray" })
-            emit("close");
-			formIsSubmit.value = false
-        })
-        .catch((e) => {
-			menusStore.setMenuSelected()
-            toast.add({ title: e.message, description: 'Notification !', color: "red" })
-            console.error(e.message)
-			formIsSubmit.value = false
-			emit("close");
-        });
 	}
 </script>
 <template>
@@ -85,9 +83,9 @@
 		:loading="formIsSubmit"
 	>
 		<UFormGroup label="Parent" name="parent">
-			<USelectMenu v-model="parentSelected" :options="parents" :disabled="formIsSubmit">
+			<USelectMenu v-model="parentSelected" :options="menuParents" placeholder="Select Parent" :disabled="formIsSubmit" @change="() => { state.parent = parentSelected?.value }">
 				<template #leading>
-					<UIcon v-if="parentSelected?.icon" :name="(parentSelected?.icon)" class="w-5 h-5" />
+					<UIcon :name="parentSelected?.icon ? parentSelected?.icon : 'i-heroicons-magnifying-glass'" class="w-5 h-5" />
 				</template>
 				<template v-if="parentSelected?.shortcuts" #trailing>
 					<UKbd class="m-[0.1em]" v-for="tooltip in parentSelected?.shortcuts" :value="tooltip" />
