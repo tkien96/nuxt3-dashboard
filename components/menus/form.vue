@@ -74,14 +74,7 @@
 	}
 </script>
 <template>
-	<UForm
-		:validate="validate"
-		:validate-on="['submit']"
-		:state="state"
-		class="space-y-4"
-		@submit="onSubmit"
-		:loading="formIsSubmit"
-	>
+	<UForm :validate="validate" :validate-on="['submit']" :state="state" class="space-y-4" @submit="onSubmit" :loading="formIsSubmit" >
 		<UFormGroup label="Parent" name="parent">
 			<USelectMenu v-model="parentSelected" :options="menuParents" placeholder="Select Parent" :disabled="formIsSubmit" @change="() => { state.parent = parentSelected?.value }">
 				<template #leading>
@@ -108,17 +101,11 @@
 			<UInput v-model="state.shortcuts" placeholder='["G", "H"]' :disabled="formIsSubmit" />
 		</UFormGroup>
 		<UFormGroup label="Exact" name="exact">
-			<UToggle
-				v-model="state.exact"
-				size="md"
-				@update:model-value="!state.exact"
-				:disabled="formIsSubmit"
-			/>
+			<UToggle v-model="state.exact" size="md" @update:model-value="!state.exact" :disabled="formIsSubmit" />
 		</UFormGroup>
 		<div class="flex justify-end gap-3">
+			<UButton type="submit" :label="(menuSelected ? 'Update' : 'Save')" :loading="formIsSubmit" />
 			<UButton label="Cancel" color="red" @click="emit('close')" />
-			<UButton v-if="menuSelected" type="submit" label="Update" :loading="formIsSubmit" />
-			<UButton v-if="!menuSelected" type="submit" label="Save" :loading="formIsSubmit" />
 		</div>
 	</UForm>
 </template>

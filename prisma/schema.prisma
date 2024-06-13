@@ -73,18 +73,19 @@ model users {
 
 model menus {
   id           Int         @id @default(autoincrement())
-  parent       Int?
+  parent       Int?        @default(0)
   name         String      @db.VarChar(255)
   to           String      @db.VarChar(255)
   icon         String?     @db.VarChar(100)
   exact        Boolean?    @default(false)
   tooltip      String?     @db.VarChar(255)
   shortcuts    String?     @db.VarChar(100)
+  columns      Json?       @db.Json
   status       EStatus     @default(ACTIVE)
   created_at   DateTime    @default(now())
-  created_by   Int
+  created_by   Int         @default(0)
   updated_at   DateTime?   @updatedAt
-  updated_by   Int?
+  updated_by   Int?        @default(0)
   // Relations to users
   createdUsers users?      @relation("menus_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers users?      @relation("menus_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -98,9 +99,9 @@ model options {
   color        String
   status       EStatus   @default(ACTIVE)
   created_at   DateTime  @default(now())
-  created_by   Int
+  created_by   Int       @default(0)
   updated_at   DateTime? @updatedAt
-  updated_by   Int?
+  updated_by   Int?      @default(0)
   // Relations to users
   createdUsers users?    @relation("options_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers users?    @relation("options_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -109,17 +110,16 @@ model options {
 }
 
 model option_details {
-  id     Int     @id @default(autoincrement())
-  parent Int     @unique
-  name   String
-  icon   String
-  color  String
-  status EStatus @default(ACTIVE)
-
+  id                  Int       @id @default(autoincrement())
+  parent              Int       @unique
+  name                String
+  icon                String
+  color               String
+  status              EStatus   @default(ACTIVE)
   created_at          DateTime  @default(now())
-  created_by          Int
+  created_by          Int       @default(0)
   updated_at          DateTime? @updatedAt
-  updated_by          Int?
+  updated_by          Int?      @default(0)
   // Relations to users
   createdUsers        users?    @relation("option_details_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers        users?    @relation("option_details_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -129,12 +129,12 @@ model option_details {
 model functions {
   id              Int                        @id @default(autoincrement())
   key             String                     @unique @db.VarChar(100)
-  menu_id         Int
+  menu_id         Int                        @default(0)
   status          EStatus                    @default(ACTIVE)
   created_at      DateTime                   @default(now())
-  created_by      Int
+  created_by      Int                        @default(0)
   updated_at      DateTime?                  @updatedAt
-  updated_by      Int?
+  updated_by      Int?                       @default(0)
   // Relations to users
   createdUsers    users?                     @relation("functions_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers    users?                     @relation("functions_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -146,12 +146,12 @@ model functions {
 
 model groups {
   id           Int                        @id @default(autoincrement())
-  name         String
+  name         String                     @db.VarChar(255)
   status       EStatus                    @default(ACTIVE)
   created_at   DateTime                   @default(now())
-  created_by   Int
+  created_by   Int                        @default(0)
   updated_at   DateTime?                  @updatedAt
-  updated_by   Int?
+  updated_by   Int?                       @default(0)
   // Relations to users
   createdUsers users?                     @relation("groups_created_by", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers users?                     @relation("groups_updated_by", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -162,13 +162,13 @@ model groups {
 model relation_group_functions {
   id           Int        @id @default(autoincrement())
   name         String
-  group_id     Int
-  function_id  Int
+  group_id     Int        @default(0)
+  function_id  Int        @default(0)
   status       EStatus    @default(ACTIVE)
-  reated_at    DateTime   @default(now())
-  created_by   Int
+  created_at   DateTime   @default(now()) // Created At
+  created_by   Int        @default(0)
   updated_at   DateTime?  @updatedAt
-  updated_by   Int?
+  updated_by   Int?       @default(0)
   // Relations
   createdUsers users?     @relation("relation_group_functions_created", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedUsers users?     @relation("relation_group_functions_updated", fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)

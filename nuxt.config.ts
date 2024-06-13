@@ -22,5 +22,5 @@ export default defineNuxtConfig({
 		optimizeDeps: {
 			include: ["vue3-smooth-dnd"],
 		},
-	},
+	}
 });

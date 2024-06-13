@@ -1,7 +1,9 @@
+import { item } from "@unovis/ts/components/bullet-legend/style";
 import { defineStore } from "pinia";
 
 export const useMenusStore = defineStore("menusStore", () => {
 	const menuLists = ref([]);
+	const menuColumns = ref([])
 	const menuSelected = ref();
 	const menuPage = ref(1)
 	const menuPageCount = ref(5)
@@ -17,6 +19,7 @@ export const useMenusStore = defineStore("menusStore", () => {
 	const menuParents = ref(menuParentDefault);
 
 	const setMenuList = (data?: any) => (menuLists.value = data);
+	const setMenuColumns = (data?: any) => (menuColumns.value = data);
 	const setMenuSelected = (data?: any) => (menuSelected.value = data);
 	const setMenuParents = (data?: any) => (menuParents.value = data);
 	const setMenuPage = (page: number) => (menuPage.value = page);
@@ -26,6 +29,19 @@ export const useMenusStore = defineStore("menusStore", () => {
 		setMenuList([]);
 		setMenuSelected();
 	};
+
+	const getMenuColumns = async() => {
+		try {
+			const { data: columns } = await useFetch<any>("/api/menus/fields");
+			setMenuColumns(columns.value.map((item: any) => ({
+				key: item.column_name,
+				label: columnName(item.column_name)
+			})));
+		} catch (error) {
+			console.error(error);
+			setMenuList();
+		}
+	}
 
 	const getMenus = async (query: {}) => {
 		try {
@@ -53,6 +69,7 @@ export const useMenusStore = defineStore("menusStore", () => {
 
 	return {
 		menuLists,
+		menuColumns,
 		menuSelected,
 		menuParentDefault,
 		menuParents,
@@ -63,6 +80,8 @@ export const useMenusStore = defineStore("menusStore", () => {
 		getMenus,
 		setMenuPage,
 		setMenuPageCount,
+		getMenuColumns,
+		setMenuColumns,
 		$reset
 	};
 });

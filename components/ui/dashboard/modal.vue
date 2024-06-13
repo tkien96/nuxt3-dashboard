@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model="isOpen" :overlay="!smallerThanSm" :transition="!smallerThanSm" :ui="ui" v-bind="attrs">
+  <UModal v-model="isOpen" :overlay="(draggable ? false : !smallerThanSm)" :transition="!smallerThanSm" :ui="draggable ? { base: `fixed draggable-modal-${modal.uid}`, margin: 'sm:my-0', width: 'sm:max-w-md' } : ui" v-bind="attrs">
     <div :class="[ui.header.base, ui.header.padding]">
       <slot name="header">
         <div :class="ui.header.inner">
@@ -78,7 +78,16 @@ const config = computed(() => ({
 defineOptions({
   inheritAttrs: false
 })
+
 const props = defineProps({
+  draggable: {
+    type: Boolean,
+    default: false
+  },
+  overlay: {
+    type: Boolean,
+    default: true
+  },
   modelValue: {
     type: Boolean,
     default: false
@@ -116,4 +125,65 @@ const isOpen = computed({
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const { ui, attrs } = useUI('dashboard.modal', toRef(props, 'ui'), config, undefined, true)
 const smallerThanSm = breakpoints.smaller('sm')
+
+// draggable
+interface DraggableContainer {
+  container: HTMLElement | null;
+  uid: number | undefined;
+  width: number;
+  height: number;
+}
+const instance = getCurrentInstance();
+const modal = reactive<DraggableContainer>({
+  container: null,
+  uid: instance?.uid,
+  width: 0,
+  height: 0,
+});
+watch(
+  () => props.modelValue,
+  async (isOpen) => {
+    if (isOpen && props.draggable) {
+      await nextTick();
+      modal.container = document.querySelector(
+        `.draggable-modal-${modal.uid}`
+      ) as HTMLElement;
+      // const innerContainer = modal.container.children[0] as HTMLElement
+
+      const { width, height } = useElementSize(modal.container);
+      modal.width = width.value;
+      modal.height = height.value;
+    }
+  },
+  { immediate: true }
+);
+const { width: windowWidth, height: windowHeight } = useWindowSize();
+const { x, y } = useDraggable(toRef(modal, 'container'), {
+  preventDefault: true,
+});
+
+watch(
+  () => [x.value, y.value],
+  () => {
+    if (modal.container) {
+      let newX = x.value;
+      let newY = y.value;
+
+      if (newX < 0) {
+        newX = 0;
+      } else if (newX + modal.width > windowWidth.value) {
+        newX = windowWidth.value - modal.width;
+      }
+
+      if (newY < 0) {
+        newY = 0;
+      } else if (newY + modal.height > windowHeight.value) {
+        newY = windowHeight.value - modal.height;
+      }
+
+      modal.container.style.left = `${newX}px`;
+      modal.container.style.top = `${newY}px`;
+    }
+  }
+);
 </script>

@@ -1,6 +1,6 @@
-import { menusDelete } from "~/server/models/menus";
+import { menuDelete } from "~/server/models/menus";
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
-  return await menusDelete(Number(id))
+  return await menuDelete(Number(id))
 })

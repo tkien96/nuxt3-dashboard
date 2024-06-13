@@ -9,7 +9,6 @@ export const prismaCreate = async (model: string, data: object) => {
 			data: data,
 		});
 	} catch (error) {
-		console.error("Error: ", error);
 		throw error;
 	}
 };
@@ -18,7 +17,6 @@ export const prismaFindMany = async (model: string, params?: any) => {
 		const options: any = buildPrismaQueries(params);
 		return await (prisma as any)[model].findMany(options || {});
 	} catch (error) {
-		console.error("Error: ", error);
 		throw error;
 	}
 };
@@ -33,7 +31,6 @@ export const prismaUpdate = async (model: string, id: number, data: object) => {
 			data: data,
 		});
 	} catch (error) {
-		console.error("Error: ", error);
 		throw error;
 	}
 };
@@ -45,7 +42,6 @@ export const prismaDelete = async (model: string, id: number) => {
 			data: { status: "NONACTIVE" },
 		});
 	} catch (error) {
-		console.error("Error: ", error);
 		throw error;
 	}
 };
@@ -56,7 +52,14 @@ export const prismaRemove = async (model: string, id: number) => {
 			where: { id: id },
 		});
 	} catch (error) {
-		console.error("Error: ", error);
+		throw error;
+	}
+};
+
+export const prismaFields = async (model: string) => {
+	try {
+		return await prisma.$queryRaw`SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ${ model }`
+	} catch (error) {
 		throw error;
 	}
 };
@@ -66,7 +69,8 @@ export const buildPrismaQueries = (params?: any): any => {
 	if (params) {
 		if (params.take) queryOptions.take = params.take;
 		if (params.skip) queryOptions.skip = params.skip;
-		if (params.sort && params.order) queryOptions.orderBy = { [params.sort]: params.order };
+		if (params.sort && params.order)
+			queryOptions.orderBy = { [params.sort]: params.order };
 		if (params.select) {
 			queryOptions.select = [];
 			params.select.map((item: any) => {

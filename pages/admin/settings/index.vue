@@ -35,17 +35,17 @@
 	}
 	async function onSubmit(event: FormSubmitEvent<any>) {
 		const data = await event.data
-		await $fetch(`/api/setting`, data)
-        .then((result) => {
-			const setting = settingStore.data
-            toast.add({ title: 'Update Setting successfully', description: 'Notification !', color: "gray", icon: "i-heroicons-check-circle" })
-            emit("close");
-        })
-        .catch((e) => {
-			menusStore.setMenuSelected()
-            toast.add({ title: e.message, description: 'Notification !', color: "red" })
-            console.error(e.message)
-        });
+		// await $fetch(`/api/setting`, data)
+        // .then((result) => {
+		// 	const setting = settingStore.data
+        //     toast.add({ title: 'Update Setting successfully', description: 'Notification !', color: "gray", icon: "i-heroicons-check-circle" })
+        //     emit("close");
+        // })
+        // .catch((e) => {
+		// 	menusStore.setMenuSelected()
+        //     toast.add({ title: e.message, description: 'Notification !', color: "red" })
+        //     console.error(e.message)
+        // });
 	}
 	async function onChange() {
 		// Do something with data
@@ -61,147 +61,33 @@
 				</template>
 			</UiDashboardNavbar>
 			<UiDashboardPanelContent class="pb-24">
-				<UForm
-					id="form-setting"
-					:state="state"
-					:validate="validate"
-					:validate-on="['submit']"
-					@submit="onSubmit"
-				>
+				<UForm id="form-setting" :state="state" :validate="validate" :validate-on="['submit']" @submit="onSubmit">
 					<UiDashboardSection>
-						<UFormGroup
-							name="name"
-							label="Name"
-							description="Will appear on receipts, invoices, and other communication."
-							required
-							class="grid grid-cols-2 gap-2 !border-t-0 !pt-0"
-							:ui="{ container: '' }"
-						>
-							<UInput
-								v-model="state.name"
-								autocomplete="off"
-								icon="i-heroicons-user"
-								size="md"
-							/>
+						<UFormGroup name="name" label="Name" description="Will appear on receipts, invoices, and other communication." required class="grid grid-cols-2 gap-2 !border-t-0 !pt-0" :ui="{ container: '' }">
+							<UInput v-model="state.name" autocomplete="off" icon="i-heroicons-user" size="md"/>
 						</UFormGroup>
-						<UFormGroup
-							name="email"
-							label="Email"
-							description="Your unique email."
-							required
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UInput
-								v-model="state.email"
-								type="email"
-								autocomplete="off"
-								icon="i-heroicons-envelope"
-								size="md"
-							/>
+						<UFormGroup name="email" label="Email" description="Your unique email." required class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
+							<UInput v-model="state.email" type="email" autocomplete="off" icon="i-heroicons-envelope" size="md"/>
 						</UFormGroup>
-						<UFormGroup
-							name="phone"
-							label="Phone"
-							description="Your unique phone."
-							required
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UInput
-								v-model="state.phone"
-								type="phone"
-								autocomplete="off"
-								size="md"
-								icon="i-heroicons-phone"
-							>
-							</UInput>
+						<UFormGroup name="phone" label="Phone" description="Your unique phone." required class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
+							<UInput v-model="state.phone" type="phone" autocomplete="off" size="md" icon="i-heroicons-phone"/>
 						</UFormGroup>
-						<UFormGroup
-							name="address"
-							label="Address"
-							description="Your unique address."
-							required
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UInput
-								v-model="state.address"
-								type="address"
-								autocomplete="off"
-								size="md"
-								icon="i-heroicons-map-pin"
-							>
-							</UInput>
+						<UFormGroup name="address" label="Address" description="Your unique address." required class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
+							<UInput v-model="state.address" type="address" autocomplete="off" size="md" icon="i-heroicons-map-pin"/>
 						</UFormGroup>
-						<UFormGroup
-							name="favicon"
-							label="Favicon"
-							description="The most common format is .ico but formats like .png and .jpg are also supported by modern browsers."
-							required
-							class="grid grid-cols-2 gap-2"
-							help="ICO. 1MB Max."
-							:ui="{
-								container: 'flex flex-wrap items-center gap-3',
-								help: 'mt-0',
-							}"
-						>
-							<UAvatar
-								:src="state.favicon"
-								alt="Favicon"
-								size="lg"
-							/>
-							<UButton
-								label="Choose"
-								color="white"
-								size="md"
-								@click="onFileClick"
-							/>
-							<input
-								ref="fileRef"
-								type="file"
-								class="hidden"
-								accept=".ico"
-								@change="onFileChange"
-							/>
+						<UFormGroup name="favicon" label="Favicon" description="The most common format is .ico but formats like .png and .jpg are also supported by modern browsers." required class="grid grid-cols-2 gap-2" help=".ico, .png, .jpg 1MB Max." :ui="{ container: 'flex flex-wrap items-center gap-3', help: 'mt-0', }">
+							<UAvatar :src="state.favicon" alt="Favicon" size="lg"/>
+							<UButton label="Choose" color="white" size="md" @click="onFileClick"/>
+							<input ref="fileRef" type="file" class="hidden" accept=".ico, .png, .jpg" @change="onFileChange"/>
 						</UFormGroup>
-						<UFormGroup
-							name="title"
-							label="Title"
-							description="Aim for around 50-60 characters to ensure the full title displays in search results."
-							class="grid grid-cols-2 gap-2"
-						>
-							<UInput
-								v-model="state.title"
-								size="md"
-								autocomplete="false"
-							/>
+						<UFormGroup name="title" label="Title" description="Aim for around 50-60 characters to ensure the full title displays in search results." class="grid grid-cols-2 gap-2">
+							<UInput v-model="state.title" size="md" autocomplete="false"/>
 						</UFormGroup>
-						<UFormGroup
-							name="keyword"
-							label="Keyword"
-							description="Focus on incorporating keywords naturally throughout your content"
-							class="grid grid-cols-2 gap-2"
-						>
-							<UInput
-								v-model="state.keyword"
-								size="md"
-								autocomplete="false"
-							/>
+						<UFormGroup name="keyword" label="Keyword" description="Focus on incorporating keywords naturally throughout your content" class="grid grid-cols-2 gap-2">
+							<UInput v-model="state.keyword" size="md" autocomplete="false" />
 						</UFormGroup>
-						<UFormGroup
-							name="description"
-							label="Description"
-							description="Aim for around 155 characters to avoid truncation in search results."
-							class="grid grid-cols-2 gap-2"
-							:ui="{ container: '' }"
-						>
-							<UTextarea
-								v-model="state.description"
-								:rows="5"
-								autoresize
-								size="md"
-							/>
+						<UFormGroup name="description" label="Description" description="Aim for around 155 characters to avoid truncation in search results." class="grid grid-cols-2 gap-2" :ui="{ container: '' }">
+							<UTextarea v-model="state.description" :rows="5" autoresize size="md"/>
 						</UFormGroup>
 					</UiDashboardSection>
 				</UForm>
